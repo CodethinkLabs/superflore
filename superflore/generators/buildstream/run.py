@@ -76,6 +76,11 @@ def main():
             help='directory for generated bst elements',
             type=str)
     parser.add_argument(
+            '--runtime-as-build-dependencies',
+            default=False,
+            action='store_true',
+            help='Generate a build-dependency for exported dependencies as well as a runtime-dependency')
+    parser.add_argument(
             '--exclude-sources-for',
             default=[],
             nargs='+',
@@ -153,6 +158,7 @@ def main():
                 distro = get_distro(args.ros_distro)
                 packages = args.only
                 exclude_sources_for = args.exclude_sources_for
+                runtime_as_build_dependencies = args.runtime_as_build_dependencies
                 include_dependencies = True
                 if include_dependencies:
                     packages = set(packages) | \
@@ -172,7 +178,8 @@ def main():
                             srcrev_cache,
                             skip_keys=skip_keys,
                             external_repos=external_repos,
-                            exclude_source=pkg in exclude_sources_for
+                            exclude_source=pkg in exclude_sources_for,
+                            runtime_as_build_dependencies=runtime_as_build_dependencies,
                         )
                     except KeyError:
                         err("No package to satisfy key '%s' available "
