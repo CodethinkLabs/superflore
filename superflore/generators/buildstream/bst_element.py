@@ -40,6 +40,7 @@ class BstElement(object):
         srcrev_cache, skip_keys, repo_dir, external_repos,
         *,
         exclude_source,
+        runtime_as_build_dependencies,
     ):
         self.repo_dir = repo_dir
         self.external_repos = external_repos
@@ -87,6 +88,7 @@ class BstElement(object):
         self.srcrev = srcrev_cache[self.src_uri]
         self.skip_keys = skip_keys
         self.exclude_source = exclude_source
+        self.runtime_as_build_dependencies = runtime_as_build_dependencies
 
     def get_license_line(self):
         self.license_line = ''
@@ -313,9 +315,15 @@ class BstElement(object):
         exec_deps, sys_deps = self.get_dependencies(
             self.rdepends, self.rdepends_external)
 
-        element["build-depends"] = buildstack + sorted(deps | buildtool_native_deps)
+        build_deps = deps | buildtool_native_deps
+        runtime_deps = deps | export_deps | buildtool_export_native_deps | exec_deps
 
-        element["runtime-depends"] = [base] + sorted(deps | export_deps | buildtool_export_native_deps | exec_deps)
+        if self.runtime_as_build_dependencies:
+            build_deps |= runtime_deps
+
+        element["build-depends"] = buildstack + sorted(build_deps)
+
+        element["runtime-depends"] = [base] + sorted(runtime_deps)
 
         variables = {}
         if self.build_type == "ament_cmake":

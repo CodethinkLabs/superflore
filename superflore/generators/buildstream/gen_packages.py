@@ -35,6 +35,7 @@ def regenerate_pkg(
     overlay, pkg, rosdistro, preserve_existing, srcrev_cache,
     skip_keys, external_repos, generated_elements_dir = "elements/generated",
     exclude_source=False,
+    runtime_as_build_dependencies=False,
 ):
     pkg_names = get_package_names(rosdistro)[0]
     if pkg not in pkg_names:
@@ -99,6 +100,7 @@ def regenerate_pkg(
         current = bst_element(
             rosdistro, pkg, srcrev_cache, skip_keys, repo_dir, external_repos,
             exclude_source=exclude_source,
+            runtime_as_build_dependencies=runtime_as_build_dependencies,
         )
     except InvalidPackage as e:
         err('Invalid package: ' + str(e))
@@ -146,6 +148,7 @@ def _gen_element_for_package(
     pkg_rosinstall, srcrev_cache, skip_keys, repo_dir, external_repos,
     *,
     exclude_source,
+    runtime_as_build_dependencies,
 ):
     pkg_names = get_package_names(rosdistro)
     pkg_dep_walker = DependencyWalker(rosdistro)
@@ -175,6 +178,7 @@ def _gen_element_for_package(
         repo_dir,
         external_repos,
         exclude_source=exclude_source,
+        runtime_as_build_dependencies=runtime_as_build_dependencies,
     )
     # add build dependencies
     for bdep in pkg_build_deps:
@@ -204,6 +208,7 @@ class bst_element(object):
         self, rosdistro, pkg_name, srcrev_cache, skip_keys, repo_dir, external_repos,
         *,
         exclude_source,
+        runtime_as_build_dependencies,
     ):
         pkg = rosdistro.release_packages[pkg_name]
         repo = rosdistro.repositories[pkg.repository_name].release_repository
@@ -217,6 +222,7 @@ class bst_element(object):
             rosdistro, pkg_name, pkg, repo, ros_pkg, pkg_rosinstall,
             srcrev_cache, skip_keys, repo_dir, external_repos,
             exclude_source=exclude_source,
+            runtime_as_build_dependencies=runtime_as_build_dependencies,
         )
 
     def element_text(self):
