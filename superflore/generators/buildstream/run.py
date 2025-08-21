@@ -16,6 +16,7 @@
 import os
 import sys
 
+from rosdistro import get_package_condition_context
 from rosdistro.dependency_walker import DependencyWalker
 from rosinstall_generator.distro import get_package_names
 from superflore.CacheManager import CacheManager
@@ -31,6 +32,7 @@ from superflore.utils import err
 from superflore.utils import file_pr
 from superflore.utils import gen_delta_msg
 from superflore.utils import get_pr_text
+from superflore.utils import get_cached_index
 from superflore.utils import get_rosdistro
 from superflore.utils import get_utcnow_timestamp_str
 from superflore.utils import info
@@ -41,10 +43,10 @@ from superflore.utils import url_to_repo_org
 from superflore.utils import warn
 
 
-def get_recursive_dependencies(distro, package_names, excludes=None, limit_depth=None):
+def get_recursive_dependencies(distro, package_names, evaluate_condition_context, excludes=None, limit_depth=None):
     excludes = set(excludes or [])
     dependencies = set([])
-    walker = DependencyWalker(distro)
+    walker = DependencyWalker(distro, evaluate_condition_context)
     for pkg_name in package_names:
         try:
             dependencies |= walker.get_recursive_depends(
@@ -153,10 +155,11 @@ def main():
                 distro = get_rosdistro(args.ros_distro, cached=not args.uncached_distro)
                 packages = args.only
                 exclude_sources_for = args.exclude_sources_for
+                evaluate_condition_context = get_package_condition_context(get_cached_index(), args.ros_distro)
                 include_dependencies = True
                 if include_dependencies:
                     packages = set(packages) | \
-                        get_recursive_dependencies(distro, packages, excludes=skip_keys)
+                        get_recursive_dependencies(distro, packages, evaluate_condition_context, excludes=skip_keys)
                 for pkg in packages:
                     if pkg in skip_keys:
                         warn("Package '%s' is in skip-keys list, skipping..."
@@ -172,7 +175,8 @@ def main():
                             srcrev_cache,
                             skip_keys=skip_keys,
                             external_repos=external_repos,
-                            exclude_source=pkg in exclude_sources_for
+                            exclude_source=pkg in exclude_sources_for,
+                            evaluate_condition_context=evaluate_condition_context,
                         )
                     except KeyError:
                         err("No package to satisfy key '%s' available "
