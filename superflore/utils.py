@@ -21,6 +21,7 @@ import string
 import sys
 import time
 
+import rosdistro
 from pkg_resources import DistributionNotFound, get_distribution
 from superflore.exceptions import UnknownPlatform
 from superflore.rosdep_support import get_cached_index, resolve_rosdep_key
@@ -708,6 +709,16 @@ def resolve_dep(pkg, os, distro=None):
 def get_distros():
     index = get_cached_index()
     return index.distributions
+
+def get_rosdistro(distro_name, *, cached):
+    index = get_cached_index()
+
+    if cached:
+        distro = rosdistro.get_cached_distribution(index, distro_name)
+    else:
+        distro = rosdistro.get_distribution(index, distro_name)
+
+    return distro
 
 
 def get_distros_by_status(status='active'):
