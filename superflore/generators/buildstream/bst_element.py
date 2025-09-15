@@ -40,6 +40,7 @@ class BstElement(object):
         srcrev_cache, skip_keys, repo_dir, external_repos,
         *,
         exclude_source,
+        evaluate_condition_context,
     ):
         self.repo_dir = repo_dir
         self.external_repos = external_repos
@@ -51,7 +52,7 @@ class BstElement(object):
         self.pkg_xml = pkg_xml
         self.author = None
         if self.pkg_xml:
-            pkg_fields = PackageMetadata(pkg_xml)
+            pkg_fields = PackageMetadata(pkg_xml, evaluate_condition_context)
             maintainer_name = pkg_fields.upstream_name
             maintainer_email = pkg_fields.upstream_email
             author_name = pkg_fields.author_name
