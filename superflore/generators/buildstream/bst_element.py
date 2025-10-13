@@ -329,7 +329,7 @@ class BstElement(object):
         source["kind"] = "git_repo"
         source["url"] = self.get_repo_src_uri()
         source["track"] = self.get_repo_branch_name()
-        source["ref"] = self.srcrev
+        source["ref"] = "%s-g%s" % (self.get_repo_tag_name(), self.srcrev)
         sources.append(source)
 
         if self.exclude_source:
