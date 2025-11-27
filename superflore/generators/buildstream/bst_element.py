@@ -348,6 +348,13 @@ class BstElement(object):
                     if listkey in include and listkey in element:
                         # Append generated list to list from include file
                         element[listkey] = {"(<)": element[listkey]}
+
+                if "cmake-extra" in include.get("variables", {}):
+                    if "variables" not in element:
+                        element["variables"] = {}
+
+                    element["variables"]["cmake-local"] = "%{cmake-extra} " + element["variables"].get("cmake-local", "")
+
                 # BuildStream include directive
                 element["(@)"] = includepath
 
